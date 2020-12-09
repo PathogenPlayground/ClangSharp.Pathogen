@@ -37,7 +37,7 @@ def github_file_command(command, message):
     
     with open(command_file, 'a') as command_file_handle:
         command_file_handle.write(message)
-        command_file_handle.write(os.linesep)
+        command_file_handle.write('\n')
 
 def set_environment_variable(name, value):
     github_file_command("ENV", f"{name}={value}")
