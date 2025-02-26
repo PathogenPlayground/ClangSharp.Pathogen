@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import os
+import gha
 import re
 import subprocess
 
@@ -9,4 +9,4 @@ match = re.match(r"^.(?P<revision>[a-f0-9]+) external/llvm-project.*", output)
 assert(match is not None), f"Malformed Git output: '{output}'"
 
 revision = match.group('revision')
-print(f"::set-output name=revision::{revision}")
+gha.set_output('revision', revision)
