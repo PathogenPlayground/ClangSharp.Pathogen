@@ -28,25 +28,25 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: windows-2019
+          - os: windows-2022
             name: Windows x64
             rid: win-x64
             libclang-subpath: bin/libclang.dll
             build-command: ./build-native.cmd
-          # We use Ubuntu 18.04 so that the binary is usable on systems using glibc 2.27 and later
+          # We use the oldest Ubuntu available so that the binary is usable on systems using older glibc
           # If we want to support even older versions we should explore building libclang with https://github.com/wheybags/glibc_version_header
-          - os: ubuntu-18.04
+          - os: ubuntu-22.04
             name: Linux x64
             rid: linux-x64
             libclang-subpath: lib/libclang.so
             build-command: ./build-native.sh
-          - os: ubuntu-arm64-latest
+          - os: ubuntu-22.04-arm
             name: Linux ARM64
             rid: linux-arm64
             libclang-subpath: lib/libclang.so
             build-command: ./build-native.sh
             skip-python-install: true
-          - os: macos-12
+          - os: macos-13
             name: macOS x64
             rid: osx-x64
             libclang-subpath: lib/libclang.dylib
@@ -58,14 +58,14 @@ jobs:
       - name: Checkout
         # We intentionally don't checkout submodules here
         # They will be restored as needed only if we need to build LLVM.
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       # ----------------------------------------------------------------------- Setup Python
-      - name: Setup Python 3.8
+      - name: Setup Python
         if: matrix.skip-python-install != true
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.8'
+          python-version: '3.11'
 
       # ----------------------------------------------------------------------- Get LLVM Revision
       - name: Get LLVM Revision
@@ -75,7 +75,7 @@ jobs:
       # ----------------------------------------------------------------------- Build LLVM
       - name: Load cached LLVM build outputs
         id: cached-llvm
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         # If you change this configuration make sure to update keep-cache-warm.yml as well.
         with:
           key: llvm-output-${{matrix.rid}}-${{steps.llvm.outputs.revision}}
@@ -100,7 +100,7 @@ jobs:
         id: cached-sccache
         # Always save the (potentially partial) sccache database so it can be used to accelerate subsequent builds when an intermittent failure occurs
         if: steps.cached-llvm.outputs.cache-hit != 'true' && always()
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         # If you change this configuration make sure to update keep-cache-warm.yml as well.
         with:
           # Note that this implicitly includes the sccache log
@@ -136,7 +136,7 @@ jobs:
           sccache --stop-server
 
       - name: Save sccache logs
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         if: steps.cached-llvm.outputs.cache-hit != 'true' && always()
         with:
           name: llvm-${{matrix.rid}}-sccache-logs
@@ -146,9 +146,9 @@ jobs:
 
       # ----------------------------------------------------------------------- Pack Runtime Packages
       - name: Setup .NET
-        uses: actions/setup-dotnet@v1
+        uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 6.0.x
+          dotnet-version: 8.x
 
       - name: Configure versioning
         run: python .github/workflows/configure-build.py
@@ -188,7 +188,7 @@ jobs:
           mv bin/llvm/${{matrix.rid}}/${{matrix.libclang-subpath}}-nosymlink bin/llvm/${{matrix.rid}}/${{matrix.libclang-subpath}}
 
       - name: Collect Build Outputs
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         # We always want to collect any build outputs that were created even if building failed
         if: always()
         with:
@@ -202,7 +202,7 @@ jobs:
             external/llvm-project/clang/tools/libclang/libClangSharp/LICENSE.md
 
       - name: Collect NuGet Packages
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         # We always want to collect any packages that were created even if building failed
         if: always()
         with:
@@ -219,7 +219,7 @@ jobs:
     steps:
       # ----------------------------------------------------------------------- Checkout
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       # SourceLink will complain about the LLVM submodule missing even though it doesn't need it
       # If we didn't clone the LLVM submodule we need to delete .gitmodules so it can chill
@@ -228,16 +228,16 @@ jobs:
         run: rm .gitmodules
 
       # ----------------------------------------------------------------------- Setup Python
-      - name: Setup Python 3.8
-        uses: actions/setup-python@v2
+      - name: Setup Python
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.8'
+          python-version: '3.11'
 
       # ----------------------------------------------------------------------- Setup .NET
       - name: Setup .NET
-        uses: actions/setup-dotnet@v1
+        uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 6.0.x
+          dotnet-version: 8.x
 
       # ----------------------------------------------------------------------- Configure Versioning
       - name: Configure build
@@ -261,7 +261,7 @@ jobs:
 
       # ----------------------------------------------------------------------- Collect Artifacts
       - name: Collect Build Outputs
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         # We always want to collect any build outputs that were created even if building failed
         if: always()
         with:
@@ -271,7 +271,7 @@ jobs:
             obj/**
 
       - name: Collect NuGet Packages
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         # We always want to collect packages when they were produced
         if: steps.pack.outcome == 'success' && always()
         with:
@@ -289,29 +289,29 @@ jobs:
     steps:
       # ----------------------------------------------------------------------- Download Packages
       - name: Download LLVM Windows x64 packages
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           name: llvm-win-x64-packages
       - name: Download LLVM Linux x64 packages
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           name: llvm-linux-x64-packages
       - name: Download LLVM Linux ARM64 packages
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           name: llvm-linux-arm64-packages
       - name: Download LLVM macOS x64 packages
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           name: llvm-osx-x64-packages
       - name: Download ClangSharp.Pathogen packages
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           name: ClangSharp.Pathogen-packages
 
       # ----------------------------------------------------------------------- Upload Combined Packages Artifact
       - name: Collect NuGet Packages
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: Packages
           if-no-files-found: error
@@ -329,22 +329,22 @@ jobs:
       # ----------------------------------------------------------------------- Download LLVM Build Outputs
       - name: Download LLVM Windows x64 build output
         if: always()
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           name: llvm-win-x64
       - name: Download LLVM Linux x64 build output
         if: always()
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           name: llvm-linux-x64
       - name: Download LLVM Linux ARM64 build output
         if: always()
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           name: llvm-linux-arm64
       - name: Download LLVM macOS x64 build output
         if: always()
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           name: llvm-osx-x64
 
@@ -373,50 +373,20 @@ jobs:
     steps:
       # ----------------------------------------------------------------------- Setup .NET
       - name: Setup .NET
-        uses: actions/setup-dotnet@v1
+        uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 6.0.x
+          dotnet-version: 8.x
 
       # ----------------------------------------------------------------------- Download built packages
       - name: Download built packages
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           name: Packages
 
       # ----------------------------------------------------------------------- Upload release assets
       - name: Upload release assets
         if: github.event_name == 'release'
-        uses: actions/github-script@v4
-        with:
-          user-agent: actions/github-script for ${{github.repository}}
-          script: |
-            const fs = require('fs').promises;
-            const path = require('path');
-            const upload_url = context.payload.release.upload_url;
-
-            if (!upload_url) {
-                throw "Missing release asset upload URL!";
-            }
-
-            for (let filePath of await fs.readdir('.')) {
-                const fileExtension = path.extname(filePath);
-                if (fileExtension != '.nupkg' && fileExtension != '.snupkg') {
-                    continue;
-                }
-
-                console.log(`Uploading '${filePath}'`);
-                const contentLength = (await fs.stat(filePath)).size;
-                const fileContents = await fs.readFile(filePath);
-                await github.repos.uploadReleaseAsset({
-                    url: upload_url,
-                    headers: {
-                        'content-type': 'application/octet-stream',
-                        'content-length': contentLength
-                    },
-                    name: path.basename(filePath),
-                    data: fileContents
-                });
-            }
+        run: gh release upload ${{github.event.release.tag_name}} *.nupkg *.snupkg --clobber
 
       # ----------------------------------------------------------------------- Push to GitHub Packages
       - name: Push to GitHub Packages
@@ -439,49 +409,19 @@ jobs:
     steps:
       # ----------------------------------------------------------------------- Setup .NET
       - name: Setup .NET
-        uses: actions/setup-dotnet@v1
+        uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 6.0.x
+          dotnet-version: 8.x
 
       # ----------------------------------------------------------------------- Download built packages
       - name: Download built packages
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           name: Packages
 
       # ----------------------------------------------------------------------- Push to NuGet.org
       - name: Push to NuGet.org
-        run: dotnet nuget push "*.nupkg" --api-key ${{secrets.NUGET_API_KEY}} --source ${{secrets.NUGET_API_URL}}
+        run: dotnet nuget push "*.nupkg" --api-key ${{secrets.NUGET_API_KEY}} --source ${{vars.NUGET_API_URL}}
         env:
           # This is a workaround for https://github.com/NuGet/Home/issues/9775
           DOTNET_SYSTEM_NET_HTTP_USESOCKETSHTTPHANDLER: 0
-
-  # =====================================================================================================================================================================
-  # Send CI Failure Notification
-  # =====================================================================================================================================================================
-  send-ci-failure-notification:
-    name: Send CI Failure Notification
-    needs: [build-llvm, build-dotnet, coalesce-packages, verify-clang-resources, publish-packages-github, publish-packages-nuget-org]
-    if: failure() && github.event_name != 'pull_request'
-    continue-on-error: true
-    runs-on: ubuntu-latest
-    steps:
-      # ----------------------------------------------------------------------- Checkout
-      - name: Checkout
-        uses: actions/checkout@v2
-
-      # ----------------------------------------------------------------------- Setup Python
-      - name: Setup Python 3.8
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.8'
-
-      # ----------------------------------------------------------------------- Send CI Failure Notification
-      - name: Send Notification
-        run: python .github/workflows/send-ci-failure-notification.py
-        env:
-          webhook_url: ${{secrets.TEAMS_WEBHOOK_URL}}
-          github_organization: ${{github.repository_owner}}
-          github_repo: ${{github.repository}}
-          github_workflow_name: ${{github.workflow}}
-          github_run_number: ${{github.run_id}}
