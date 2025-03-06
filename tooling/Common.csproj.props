@@ -20,10 +20,10 @@
 
     <!-- Embed untracked sources in the PDB -->
     <EmbedUntrackedSources Condition="'$(ContinuousIntegrationBuild)' == 'true'">true</EmbedUntrackedSources>
-    
+
     <!-- ClangSharp.Pathogen-specific -->
     <LlvmBuildOutputRoot>$(MSBuildThisFileDirectory)../bin/llvm/</LlvmBuildOutputRoot>
-    <LlvmVersion>14.0.4</LlvmVersion>
+    <LlvmVersion>18</LlvmVersion>
     <LlvmSourceRoot>$(MSBuildThisFileDirectory)../external/llvm-project/</LlvmSourceRoot>
     <ClangLicensePath>$(LlvmSourceRoot)clang/LICENSE.TXT</ClangLicensePath>
     <LibClangSharpLicensePath>$(LlvmSourceRoot)clang/tools/libclang/libClangSharp/LICENSE.md</LibClangSharpLicensePath>
