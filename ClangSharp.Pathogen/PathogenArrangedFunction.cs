@@ -16,6 +16,7 @@ namespace ClangSharp.Pathogen
             public readonly uint ArgumentsPassedInRegisterCount;
             public readonly uint ArgumentCount;
             public readonly PathogenArgumentInfo ReturnInfo;
+            public readonly uint MaxVectorWidth;
         }
 
         private RawArrangedFunction* Handle;

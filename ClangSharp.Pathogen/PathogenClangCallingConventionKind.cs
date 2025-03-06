@@ -21,5 +21,8 @@
         PreserveMost,
         PreserveAll,
         AArch64VectorCall,
+        AArch64SVEPCS,
+        AMDGPUKernelCall,
+        M68kRTD,
     }
 }

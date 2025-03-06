@@ -1,4 +1,6 @@
-﻿namespace ClangSharp.Pathogen
+﻿using System;
+
+namespace ClangSharp.Pathogen
 {
     public enum PathogenLlvmCallingConventionKind : byte
     {
@@ -7,7 +9,7 @@
         Cold = 9,
         GHC = 10,
         HiPE = 11,
-        WebKit_JS = 12,
+        [Obsolete] WebKit_JS = 12,
         AnyReg = 13,
         PreserveMost = 14,
         PreserveAll = 15,
@@ -32,8 +34,8 @@
         X86_64_SysV = 78,
         Win64 = 79,
         X86_VectorCall = 80,
-        HHVM = 81,
-        HHVM_C = 82,
+        [Obsolete] HHVM = 81,
+        [Obsolete] HHVM_C = 82,
         X86_INTR = 83,
         AVR_INTR = 84,
         AVR_SIGNAL = 85,
@@ -53,5 +55,13 @@
         WASM_EmscriptenInvoke = 99,
         AMDGPU_Gfx = 100,
         M68k_INTR = 101,
+        AArch64_SME_ABI_Support_Routines_PreserveMost_From_X0 = 102,
+        AArch64_SME_ABI_Support_Routines_PreserveMost_From_X2 = 103,
+        AMDGPU_CS_Chain = 104,
+        AMDGPU_CS_ChainPreserve = 105,
+        M68k_RTD = 106,
+        GRAAL = 107,
+        ARM64EC_Thunk_X64 = 108,
+        ARM64EC_Thunk_Native = 109,
     }
 }

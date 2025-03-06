@@ -16,5 +16,7 @@ namespace ClangSharp.Pathogen
         IsVariadic = 128,
         UsesInAlloca = 256,
         HasExtendedParameterInfo = 512,
+        IsDelegateCall = 1024,
+        IsCmseNSCall = 2048,
     }
 }
